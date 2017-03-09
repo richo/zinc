@@ -23,6 +23,7 @@ and each such struct has a `setup()` method that configures the hardware
 
 pub mod lpc11xx;
 #[cfg(feature = "mcu_lpc17xx")] pub mod lpc17xx;
+#[cfg(feature = "mcu_lpc43xx")] pub mod lpc43xx;
 #[cfg(feature = "mcu_stm32f1")] pub mod stm32f1;
 #[cfg(feature = "mcu_stm32f4")] pub mod stm32f4;
 #[cfg(feature = "mcu_stm32f7")] pub mod stm32f7;
