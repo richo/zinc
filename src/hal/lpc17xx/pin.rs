@@ -39,6 +39,9 @@ pub enum Port {
   Port2,
   Port3,
   Port4,
+  Port5,
+  Port6,
+  Port7,
 }
 
 /// Pin functions (GPIO or up to three additional functions).
@@ -118,6 +121,9 @@ impl Pin {
       Port2 => &reg::GPIO_2,
       Port3 => &reg::GPIO_3,
       Port4 => &reg::GPIO_4,
+      Port5 => &reg::GPIO_5,
+      Port6 => &reg::GPIO_6,
+      Port7 => &reg::GPIO_7,
     }
   }
 
