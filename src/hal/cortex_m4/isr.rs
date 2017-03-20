@@ -41,39 +41,58 @@ pub unsafe extern fn isr_handler_wrapper() {
       .weak isr_debugmon
       .weak isr_reserved_1
 
-      .thumb_func
-      isr_nmi:
-
-      .thumb_func
-      isr_hardfault:
-
-      .thumb_func
-      isr_mmfault:
-
-      .thumb_func
-      isr_busfault:
-
-      .thumb_func
-      isr_usagefault:
-
-      .thumb_func
-      isr_svcall:
-
-      .thumb_func
-      isr_pendsv:
 
       .thumb_func
       isr_systick:
+# This is the handler that keeps firing
+      bx lr
+
+      .thumb_func
+      isr_nmi:
+      eor r0, r0, r0
+      add r0, r0, #2
+
+      .thumb_func
+      isr_hardfault:
+      eor r0, r0, r0
+      add r0, r0, #3
+
+      .thumb_func
+      isr_mmfault:
+      eor r0, r0, r0
+      add r0, r0, #4
+
+      .thumb_func
+      isr_busfault:
+      eor r0, r0, r0
+      add r0, r0, #5
+
+      .thumb_func
+      isr_usagefault:
+      eor r0, r0, r0
+      add r0, r0, #6
+
+      .thumb_func
+      isr_svcall:
+      eor r0, r0, r0
+      add r0, r0, #7
+
+      .thumb_func
+      isr_pendsv:
+      eor r0, r0, r0
+      add r0, r0, #8
 
       b isr_default_fault
 
       .thumb_func
       isr_default_fault:
+      bkpt
       mrs r0, psp
       mrs r1, msp
       ldr r2, [r0, 0x18]
       ldr r3, [r1, 0x18]
-      bkpt" :::: "volatile");
+      bkpt
+      " :::: "volatile");
 }
 
 #[allow(non_upper_case_globals)]
