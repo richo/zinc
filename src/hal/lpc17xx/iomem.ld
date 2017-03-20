@@ -193,8 +193,12 @@ lpc17xx_iomem_PCLKSEL1  = 0x400FC1AC;
 
 lpc17xx_iomem_ADC       = 0x40034000;
 
-lpc17xx_iomem_GPIO0     = 0x2009C000;
-lpc17xx_iomem_GPIO1     = 0x2009C020;
-lpc17xx_iomem_GPIO2     = 0x2009C040;
-lpc17xx_iomem_GPIO3     = 0x2009C060;
-lpc17xx_iomem_GPIO4     = 0x2009C080;
+GPIO_LPC_PORT_OFFSET = lpc17xx_iomem_GPIO_PORT + 0x2000;
+lpc17xx_iomem_GPIO0  = GPIO_LPC_PORT_OFFSET + (0*4);
+lpc17xx_iomem_GPIO1  = GPIO_LPC_PORT_OFFSET + (1*4);
+lpc17xx_iomem_GPIO2  = GPIO_LPC_PORT_OFFSET + (2*4);
+lpc17xx_iomem_GPIO3  = GPIO_LPC_PORT_OFFSET + (3*4);
+lpc17xx_iomem_GPIO4  = GPIO_LPC_PORT_OFFSET + (4*4);
+lpc17xx_iomem_GPIO5  = GPIO_LPC_PORT_OFFSET + (5*4);
+lpc17xx_iomem_GPIO6  = GPIO_LPC_PORT_OFFSET + (6*4);
+lpc17xx_iomem_GPIO7  = GPIO_LPC_PORT_OFFSET + (7*4);
