@@ -356,6 +356,9 @@ mod reg {
     #[link_name="lpc17xx_iomem_GPIO2"] pub static GPIO_2: Gpio;
     #[link_name="lpc17xx_iomem_GPIO3"] pub static GPIO_3: Gpio;
     #[link_name="lpc17xx_iomem_GPIO4"] pub static GPIO_4: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO5"] pub static GPIO_5: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO6"] pub static GPIO_6: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO7"] pub static GPIO_7: Gpio;
   }
 
 
