@@ -25,10 +25,16 @@
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 
 #[cfg(feature = "cpu_cortex-m4")]
-#[path="cortex_m3/isr.rs"] pub mod isr_cortex_m4;
+#[path="cortex_m4/isr.rs"] pub mod isr_cortex_m4;
+
+#[cfg(feature = "cpu_cortex-m7")]
+#[path="cortex_m3/isr.rs"] pub mod isr_cortex_m7;
 
 #[cfg(feature = "mcu_lpc17xx")]
 #[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
+
+#[cfg(feature = "mcu_lpc43xx")]
+#[path="lpc43xx/isr.rs"] pub mod isr_lpc43xx;
 
 #[cfg(feature = "mcu_k20")]
 #[path="k20/isr.rs"] pub mod isr_k20;

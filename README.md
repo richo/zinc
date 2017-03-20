@@ -54,7 +54,7 @@ processors at this time.
 * ST STM32l1
 
 In the future, a better story will be available that will allow for
-additional processor families, procesors, and boards using those
+additional processor families, processors, and boards using those
 processors to be defined more easily.
 
 ## License
@@ -70,8 +70,16 @@ language.  As such, we recommend using the latest nightly version of
 Rust for development.  As features of the language stabilize over
 time, it is the goal of Zinc to eventually be able to target stable
 versions of the compiler.
-[Multirust](https://github.com/brson/multirust) may be used to manage
+[rustup.rs](https://www.rustup.rs/) may be used to manage
 installations of multiple versions of rust on single machine.
+
+The currently supported Rust version is nightly-2016-09-17.  To install
+it with rustup use the following:
+
+```Shell
+rustup install nightly-2016-09-17
+rustup override set nightly-2016-09-17
+```
 
 In addition to rust itself, a GCC cross-toolchain for ARM must be
 installed.  Although LLVM is used for a majority of compilation, the
@@ -95,7 +103,7 @@ Namely, cargo must know about and have access to:
 
 Suppose we are targetting the `k20` platform.  In that case, I could
 build the `blink_k20` example program by doing the following.  Refer
-to (build-jenkins.sh)[support/build-jenkins.sh] for a mapping of
+to [build-jenkins.sh](support/build-jenkins.sh) for a mapping of
 platforms to targets.
 
 ```
@@ -120,7 +128,7 @@ ar = "arm-none-eabi-ar"
 
 ### Using Zinc for your Project
 
-Sinc Zinc uses cargo for its build system, using Zinc from your own
+Since Zinc uses cargo for its build system, using Zinc from your own
 project just requires setting up your Cargo.toml correctly.
 
 You can find an example of how to do that here:

@@ -42,12 +42,7 @@ fn copy_linker_scripts<P: AsRef<Path>, Q: AsRef<Path>>(target: P, out_path: Q) -
 }
 
 fn main() {
-  let platform = match get_platform() {
-    Some(p) => p,
-    None => {
-      return;
-    },
-  };
+  let platform = get_platform().expect("Couldn't get platform");
   // Get output directory for cargo for zinc crate
   let out_dir = env::var("OUT_DIR").unwrap();
 

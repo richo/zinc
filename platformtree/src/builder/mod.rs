@@ -16,9 +16,9 @@
 use std::rc::Rc;
 use std::ops::DerefMut;
 use syntax::abi;
-use syntax::ast::TokenTree;
+use syntax::tokenstream::TokenTree;
 use syntax::ast;
-use syntax::codemap::{Span, DUMMY_SP};
+use syntax::codemap::{Span, Spanned, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
@@ -32,7 +32,7 @@ mod os;
 pub mod meta_args;
 
 pub struct Builder {
-  main_stmts: Vec<P<ast::Stmt>>,
+  main_stmts: Vec<ast::Stmt>,
   type_items: Vec<P<ast::Item>>,
   pt: Rc<node::PlatformTree>,
 }
@@ -120,7 +120,7 @@ impl Builder {
   }
 
   pub fn new(pt: Rc<node::PlatformTree>, cx: &ExtCtxt) -> Builder {
-    let use_zinc = cx.item_use_simple(DUMMY_SP, ast::Inherited, cx.path_ident(
+    let use_zinc = cx.item_use_simple(DUMMY_SP, ast::Visibility::Inherited, cx.path_ident(
         DUMMY_SP, cx.ident_of("zinc")));
 
     Builder {
@@ -130,7 +130,7 @@ impl Builder {
     }
   }
 
-  pub fn main_stmts(&self) -> Vec<P<ast::Stmt>> {
+  pub fn main_stmts(&self) -> Vec<ast::Stmt> {
     self.main_stmts.clone()
   }
 
@@ -138,12 +138,12 @@ impl Builder {
     self.pt.clone()
   }
 
-  pub fn add_main_statement(&mut self, stmt: P<ast::Stmt>) {
+  pub fn add_main_statement(&mut self, stmt: ast::Stmt) {
     self.main_stmts.push(stmt);
   }
 
-  pub fn add_type_item(&mut self, item: P<ast::Item>) {
-    self.type_items.push(item);
+  pub fn add_type_item(&mut self, item: ast::Item) {
+    self.type_items.push(P(item));
   }
 
   fn emit_main(&self, cx: &ExtCtxt) -> P<ast::Item> {
@@ -162,9 +162,9 @@ impl Builder {
       stmts.push(s);
     }
 
-    let body = cx.block(DUMMY_SP, stmts, None);
+    let body = cx.block(DUMMY_SP, stmts);
 
-    let unused_variables = cx.meta_word(DUMMY_SP,
+    let unused_variables = cx.meta_list_item_word(DUMMY_SP,
         InternedString::new("unused_variables"));
     let allow = cx.meta_list(
         DUMMY_SP,
@@ -193,12 +193,12 @@ impl Builder {
         // zinc::os::task::morestack();
     ));
     let empty_span = DUMMY_SP;
-    let body = cx.block(empty_span, vec!(stmt), None);
+    let body = cx.block(empty_span, vec!(stmt));
     self.item_fn(cx, empty_span, "__morestack", &[], body)
   }
 
   pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<P<ast::Item>> {
-    let non_camel_case_types = cx.meta_word(DUMMY_SP,
+    let non_camel_case_types = cx.meta_list_item_word(DUMMY_SP,
         InternedString::new("non_camel_case_types"));
     let allow = cx.meta_list(
         DUMMY_SP,
@@ -228,14 +228,14 @@ impl Builder {
       ident: cx.ident_of(name),
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::ItemFn(
-          cx.fn_decl(Vec::new(), cx.ty(DUMMY_SP, ast::Ty_::TyTup(Vec::new()))),
+      node: ast::ItemKind::Fn(
+          cx.fn_decl(Vec::new(), cx.ty(DUMMY_SP, ast::TyKind::Tup(Vec::new()))),
           ast::Unsafety::Unsafe,
-          ast::Constness::NotConst,
-          abi::Rust, // TODO(farcaller): should this be abi::C?
+          Spanned{ node: ast::Constness::NotConst, span: DUMMY_SP},
+          abi::Abi::Rust, // TODO(farcaller): should this be abi::C?
           ast::Generics::default(),
           body),
-      vis: ast::Public,
+      vis: ast::Visibility::Public,
       span: span,
     })
   }

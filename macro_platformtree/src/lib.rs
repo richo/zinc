@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(rustc_private, plugin_registrar, quote, convert)]
+#![feature(rustc_private, plugin_registrar, quote)]
 
 extern crate platformtree;
 extern crate rustc;
@@ -26,6 +26,7 @@ use std::ops::Deref;
 
 use rustc_plugin::Registry;
 use syntax::ast;
+use syntax::tokenstream;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult, MultiModifier, Annotatable};
@@ -46,7 +47,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
       MultiModifier(Box::new(macro_zinc_task)));
 }
 
-pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
+pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[tokenstream::TokenTree])
     -> Box<MacResult+'static> {
   let pt = Parser::new(cx, tts).parse_platformtree();
   let items = Builder::build(cx, pt.unwrap())
@@ -56,7 +57,7 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
 }
 
 pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
-    tts: &[ast::TokenTree]) -> Box<MacResult+'static> {
+    tts: &[tokenstream::TokenTree]) -> Box<MacResult+'static> {
   let result = macro_platformtree(cx, sp, tts);
   println!("Platform Tree dump:");
   for i in result.make_items().unwrap().as_slice().iter() {
@@ -76,7 +77,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
 
 fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
   match it.node {
-    ast::ItemFn(ref decl, style, constness, abi, _, ref block) => {
+    ast::ItemKind::Fn(ref decl, style, constness, abi, _, ref block) => {
       let istr = it.ident.name.as_str();
       let fn_name = &*istr;
       let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
@@ -103,7 +104,7 @@ fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
                   }).collect(),
                   vec!())),
           None,
-          ast::MutImmutable));
+          ast::Mutability::Immutable));
       let new_decl = P(ast::FnDecl {
         inputs: vec!(new_arg),
         ..decl.deref().clone()
@@ -115,9 +116,10 @@ fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
         where_clause: ast::WhereClause {
           id: ast::DUMMY_NODE_ID,
           predicates: vec!(),
-        }
+        },
+        span : DUMMY_SP,
       };
-      let new_node = ast::ItemFn(new_decl, style, constness, abi, new_generics, block.clone());
+      let new_node = ast::ItemKind::Fn(new_decl, style, constness, abi, new_generics, block.clone());
 
       P(ast::Item {node: new_node, ..it.deref().clone() })
     },

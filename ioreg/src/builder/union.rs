@@ -17,7 +17,7 @@ use std::rc::Rc;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::codemap::{DUMMY_SP, dummy_spanned, respan, Spanned};
+use syntax::codemap::{DUMMY_SP, respan, Spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 
@@ -72,20 +72,20 @@ impl<'a> Iterator for PaddedRegsIterator<'a> {
 }
 
 /// Build types for `RegUnions`
-pub struct BuildUnionTypes<'a> {
+pub struct BuildUnionTypes<'a, 'b> where 'b : 'a{
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>
+  cx: &'a ExtCtxt<'b>
 }
 
-impl<'a> BuildUnionTypes<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-      -> BuildUnionTypes<'a> {
+impl<'a, 'b> BuildUnionTypes<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+      -> BuildUnionTypes<'a, 'b> {
     BuildUnionTypes { builder: builder, cx: cx }
   }
 }
 
 fn expr_usize(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
-  cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsignedIntLit(ast::TyUs)))
+  cx.expr_lit(n.span, ast::LitKind::Int(n.node as u64, ast::LitIntType::Unsigned(ast::UintTy::Us)))
 }
 
 /// Returns the type of the field representing the given register
@@ -98,12 +98,12 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     1 => base_ty,
     n =>
       cx.ty(reg.count.span,
-            ast::TyFixedLengthVec(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
+            ast::TyKind::FixedLengthVec(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
   }
 }
 
 
-impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
+impl<'a, 'c> node::RegVisitor for BuildUnionTypes<'a, 'c> {
   fn visit_union_reg<'b>(&'b mut self, path: &Vec<String>, reg: &'b node::Reg,
                          subregs: Rc<Vec<node::Reg>>) {
     let items = self.build_union_type(path, reg, &*subregs);
@@ -113,7 +113,7 @@ impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   }
 }
 
-impl<'a> BuildUnionTypes<'a> {
+impl<'a, 'b> BuildUnionTypes<'a, 'b> {
   /// Produce a field for the given register in a `RegUnion` struct
   fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg)
                            -> ast::StructField {
@@ -123,21 +123,17 @@ impl<'a> BuildUnionTypes<'a> {
     };
     let mut field_path = path.clone();
     field_path.push(reg.name.node.clone());
-    dummy_spanned(
-      ast::StructField_ {
-        kind: ast::NamedField(
-          self.cx.ident_of(reg.name.node.as_str()),
-          ast::Public),
-        id: ast::DUMMY_NODE_ID,
-        ty: reg_struct_type(self.cx, &field_path, reg),
-        attrs: attrs,
-      }
-    )
+    ast::StructField {
+      span: DUMMY_SP,
+      ident: Some(self.cx.ident_of(reg.name.node.as_str())),
+      vis: ast::Visibility::Public,
+      id: ast::DUMMY_NODE_ID,
+      ty: reg_struct_type(self.cx, &field_path, reg),
+      attrs: attrs,
+    }
   }
 
   /// Build field for padding or a register
-  // Dummy spans allowed here because u8 doesn't come from anywhere
-  #[allow(dummy_span)]
   fn build_pad_or_reg(&self, path: &Vec<String>, reg_or_pad: RegOrPadding,
                       index: usize) -> ast::StructField {
     match reg_or_pad {
@@ -150,17 +146,15 @@ impl<'a> BuildUnionTypes<'a> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyFixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
-        dummy_spanned(
-          ast::StructField_ {
-            kind: ast::NamedField(
-              self.cx.ident_of(format!("_pad{}", index).as_str()),
-              ast::Inherited),
-            id: ast::DUMMY_NODE_ID,
-            ty: ty,
-            attrs: Vec::new(),
-          },
-        )
+            ast::TyKind::FixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
+        ast::StructField {
+          span: DUMMY_SP,
+          ident: Some(self.cx.ident_of(format!("_pad{}", index).as_str())),
+          vis: ast::Visibility::Inherited,
+          id: ast::DUMMY_NODE_ID,
+          ty: ty,
+          attrs: Vec::new(),
+        }
       },
     }
   }
@@ -199,8 +193,8 @@ impl<'a> BuildUnionTypes<'a> {
       ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::ItemStruct(struct_def, ast::Generics::default()),
-      vis: ast::Public,
+      node: ast::ItemKind::Struct(struct_def, ast::Generics::default()),
+      vis: ast::Visibility::Public,
       span: reg.name.span,
     });
     let mut full_size: u64 = 0;

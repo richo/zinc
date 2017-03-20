@@ -20,26 +20,25 @@ use syntax::ast;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::ToTokens;
 
 use super::Builder;
 use super::super::node;
 use super::utils;
 
 /// A visitor to build the field setters for primitive registers
-pub struct BuildSetters<'a> {
+pub struct BuildSetters<'a, 'b> where 'b : 'a {
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>,
+  cx: &'a ExtCtxt<'b>,
 }
 
-impl<'a> BuildSetters<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-      -> BuildSetters<'a> {
+impl<'a, 'b> BuildSetters<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+      -> BuildSetters<'a, 'b> {
     BuildSetters { builder: builder, cx: cx }
   }
 }
 
-impl<'a> node::RegVisitor for BuildSetters<'a> {
+impl<'a, 'c> node::RegVisitor for BuildSetters<'a, 'c> {
   fn visit_prim_reg<'b>(&'b mut self, path: &Vec<String>,
       reg: &'b node::Reg, fields: &Vec<node::Field>)
   {
@@ -198,7 +197,6 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let done = build_done(cx, path);
   quote_item!(cx,
     #[allow(dead_code)]
-    #[inline(always)]
     impl<'a> $setter_ident<'a> {
       $new
       $new_is

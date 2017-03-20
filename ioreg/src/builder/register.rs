@@ -20,20 +20,18 @@ use syntax::ast;
 use syntax::ptr::P;
 use syntax::codemap::{respan, mk_sp};
 use syntax::ext::base::ExtCtxt;
-use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::ToTokens;
 
 use super::Builder;
 use super::utils;
 use super::super::node;
 
 /// A visitor to build the struct for each register
-pub struct BuildRegStructs<'a> {
+pub struct BuildRegStructs<'a, 'b> where 'b : 'a {
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>,
+  cx: &'a ExtCtxt<'b>,
 }
 
-impl<'a> node::RegVisitor for BuildRegStructs<'a> {
+impl<'a, 'b> node::RegVisitor for BuildRegStructs<'a, 'b> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
                     fields: &Vec<node::Field>) {
     let width = match reg.ty {
@@ -52,9 +50,9 @@ impl<'a> node::RegVisitor for BuildRegStructs<'a> {
   }
 }
 
-impl<'a> BuildRegStructs<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-             -> BuildRegStructs<'a> {
+impl<'a, 'b> BuildRegStructs<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+             -> BuildRegStructs<'a, 'b> {
     BuildRegStructs {builder: builder, cx: cx}
   }
 }
@@ -72,7 +70,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         .segments.last().unwrap().identifier;
       let enum_def: ast::EnumDef = ast::EnumDef {
         variants: FromIterator::from_iter(
-          variants.iter().map(|v| P(build_enum_variant(cx, v)))),
+          variants.iter().map(|v| build_enum_variant(cx, v))),
       };
       let mut attrs: Vec<ast::Attribute> = vec!(
         utils::list_attribute(cx, "derive",
@@ -99,8 +97,8 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
       let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
-        node: ast::ItemEnum(enum_def, ast::Generics::default()),
-        vis: ast::Public,
+        node: ast::ItemKind::Enum(enum_def, ast::Generics::default()),
+        vis: ast::Visibility::Public,
         attrs: attrs,
         span: field.ty.span,
       });
@@ -164,7 +162,7 @@ fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
       attrs: vec!(doc_attr),
       data: ast::VariantData::Unit(ast::DUMMY_NODE_ID),
       disr_expr: Some(utils::expr_int(cx, respan(variant.value.span,
-                                                 variant.value.node as i64))),
+                                                 variant.value.node))),
     }
   )
 }

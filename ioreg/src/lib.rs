@@ -327,10 +327,7 @@ N => NAME
 
 */
 
-#![feature(quote, plugin_registrar, rustc_private, convert)]
-#![feature(plugin)]
-
-#![plugin(syntaxext_lint)]
+#![feature(quote, plugin_registrar, rustc_private)]
 
 extern crate rustc;
 extern crate syntax;
@@ -339,6 +336,7 @@ extern crate rustc_plugin;
 
 use rustc_plugin::Registry;
 use syntax::ast;
+use syntax::tokenstream;
 use syntax::ptr::P;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
@@ -355,7 +353,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("ioregs_debug", macro_ioregs_debug);
 }
 
-pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
+pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[tokenstream::TokenTree])
                     -> Box<MacResult+'static> {
   match parser::Parser::new(cx, tts).parse_ioregs() {
     Some(group) => {
@@ -369,7 +367,7 @@ pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
   }
 }
 
-pub fn macro_ioregs_debug(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
+pub fn macro_ioregs_debug(cx: &mut ExtCtxt, _: Span, tts: &[tokenstream::TokenTree])
                     -> Box<MacResult+'static> {
   match parser::Parser::new(cx, tts).parse_ioregs() {
     Some(group) => {

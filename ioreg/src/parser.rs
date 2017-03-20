@@ -15,13 +15,15 @@
 
 use std::rc::{Rc};
 use std::ops::Deref;
-use syntax::ast::{Ident, TokenTree};
+use syntax::ast::Ident;
+use syntax::tokenstream::TokenTree;
 use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
 use syntax::parse;
 use syntax::print::pprust;
+use syntax::parse::lexer::Reader;
 
 use node;
 use node::RegType;
@@ -36,10 +38,10 @@ enum Scope {
   Outer,
 }
 
-pub struct Parser<'a> {
-  cx: &'a ExtCtxt<'a>,
+pub struct Parser<'a, 'b> where 'b : 'a {
+  cx: &'a ExtCtxt<'b>,
   sess: &'a ParseSess,
-  reader: Box<lexer::Reader+'a>,
+  reader: lexer::TtReader<'a>,
   token: token::Token,
   span: Span,
 
@@ -47,12 +49,11 @@ pub struct Parser<'a> {
   last_span: Span,
 }
 
-impl<'a> Parser<'a> {
-  pub fn new(cx: &'a ExtCtxt<'a>, tts: &[TokenTree]) -> Parser<'a> {
+impl<'a, 'b> Parser<'a, 'b> {
+  pub fn new(cx: &'a ExtCtxt<'b>, tts: &[TokenTree]) -> Parser<'a, 'b> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-    let mut reader = Box::new(lexer::new_tt_reader(
-        &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
+    let mut reader = lexer::new_tt_reader(&sess.span_diagnostic, None, None, ttsvec);
 
     let tok0 = reader.next_token();
     let token = tok0.tok;
@@ -379,7 +380,7 @@ impl<'a> Parser<'a> {
       token::Colon => {
         self.bump();
         match self.token.clone() {
-          ref t@token::Ident(_,_) => {
+          ref t@token::Ident(_) => {
             match pprust::token_to_string(t) {
               ref s if s.eq(&"rw") => { self.bump(); node::Access::ReadWrite },
               ref s if s.eq(&"ro") => { self.bump(); node::Access::ReadOnly  },
@@ -546,7 +547,7 @@ impl<'a> Parser<'a> {
                                      &self.sess.span_diagnostic,
                                      self.span);
         match lit {
-          ast::LitInt(n, _)  => Some(n),
+          ast::LitKind::Int(n, _)  => Some(n),
           _ => None,
         }
       },
@@ -631,7 +632,7 @@ impl<'a> Parser<'a> {
   fn expect_ident(&mut self) -> Option<String> {
     let tok_str = pprust::token_to_string(&self.token);
     match self.token {
-      token::Ident(_, _) => {
+      token::Ident(_) => {
         self.bump();
         Some(tok_str)
       },

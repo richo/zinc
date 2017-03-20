@@ -17,19 +17,18 @@ use syntax::ast;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::ToTokens;
 
 use super::Builder;
 use super::utils;
 use super::super::node;
 
 /// A visitor to build accessor functions for each register struct
-pub struct BuildAccessors<'a> {
+pub struct BuildAccessors<'a, 'b> where 'b : 'a {
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>,
+  cx: &'a ExtCtxt<'b>,
 }
 
-impl<'a> node::RegVisitor for BuildAccessors<'a> {
+impl<'a, 'b> node::RegVisitor for BuildAccessors<'a, 'b> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
                     fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::Access::WriteOnly) {
@@ -50,9 +49,9 @@ impl<'a> node::RegVisitor for BuildAccessors<'a> {
   }
 }
 
-impl<'a> BuildAccessors<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-             -> BuildAccessors<'a> {
+impl<'a, 'b> BuildAccessors<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+             -> BuildAccessors<'a, 'b> {
     BuildAccessors {builder: builder, cx: cx}
   }
 }

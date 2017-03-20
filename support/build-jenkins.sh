@@ -46,6 +46,10 @@ else
       TARGET=thumbv7em-none-eabi
       EXAMPLES="empty blink_k20 blink_k20_isr"
       ;;
+    stm32f1 )
+      TARGET=thumbv7m-none-eabi
+      EXAMPLES="empty blink_stm32f1 usart_stm32f1"
+      ;;
     stm32f4 )
       TARGET=thumbv7em-none-eabi
       EXAMPLES="empty blink_stm32f4"
@@ -60,7 +64,6 @@ else
 
   for e in $EXAMPLES; do
     pushd "examples/$e"
-    ln -sf "../../$TARGET.json"
     cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --release
     popd
   done
