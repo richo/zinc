@@ -89,6 +89,15 @@ impl Pin {
 
   fn setup_regs(&self, function: Function,
       gpiodir: Option<::hal::pin::GpioDirection>) {
+
+      match function {
+          Function::Gpio => (self as &::hal::pin::Gpio).set_direction(gpiodir.unwrap()),
+          _ => {},
+    }
+
+  }
+  fn _setup_regs(&self, function: Function,
+      gpiodir: Option<::hal::pin::GpioDirection>) {
     let (offset, reg) = self.get_pinsel_reg_and_offset();
 
     let fun_bits: u32  = (function as u32) << ((offset as usize) * 2);
