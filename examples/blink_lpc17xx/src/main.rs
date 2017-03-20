@@ -1,3 +1,4 @@
+#![feature(asm)]
 #![feature(plugin, start)]
 #![no_std]
 #![plugin(macro_zinc)]
@@ -6,10 +7,10 @@ extern crate zinc;
 
 use core::option::Option::Some;
 
-use zinc::hal::lpc17xx::{pin, timer};
+use zinc::hal::lpc17xx::{pin};
 use zinc::hal::pin::Gpio;
 use zinc::hal::pin::GpioDirection;
-use zinc::hal::timer::Timer;
+// use zinc::hal::timer::Timer;
 
 #[zinc_main]
 pub fn main() {
@@ -22,12 +23,15 @@ pub fn main() {
     pin::Function::Gpio,
     Some(GpioDirection::Out));
 
-  let timer = timer::Timer::new(timer::TimerPeripheral::Timer0, 25, 4);
 
   loop  {
     led2.set_high();
-    timer.wait_ms(10);
+    for _ in 0..1_000_000 {
+        unsafe { asm!("nop") };
+    }
     led2.set_low();
-    timer.wait_ms(10);
+    for _ in 0..1_000_000 {
+        unsafe { asm!("nop") };
+    }
   }
 }
