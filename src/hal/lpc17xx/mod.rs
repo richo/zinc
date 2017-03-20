@@ -17,4 +17,5 @@
 
 pub mod system_clock;
 pub mod pin;
+pub mod greatfet;
 // pub mod ssp;
