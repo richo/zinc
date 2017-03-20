@@ -336,10 +336,17 @@ mod reg {
     #[link_name="lpc17xx_iomem_PINMODE9"] pub static PINMODE9: PINMODE;
   }
 
-  ioreg_old!(Gpio: u32, FIODIR, _r0, _r1, _r2, FIOMASK, FIOPIN, FIOSET, FIOCLR);
+  gpio_reg!(Gpio: u32, (FIODIR, _FIODIR),
+                        (FIOMASK, _FIOMASK),
+                        (FIOPIN, _FIOPIN),
+                        (FIOMPIN, _FIOMPIN),
+                        (FIOSET, _FIOSET),
+                        (FIOCLR, _FIOCLR)
+            );
   reg_rw!(Gpio, u32, FIODIR,  set_FIODIR,  FIODIR);
   reg_rw!(Gpio, u32, FIOMASK, set_FIOMASK, FIOMASK);
   reg_rw!(Gpio, u32, FIOPIN,  set_FIOPIN,  FIOPIN);
+  reg_rw!(Gpio, u32, FIOMPIN, set_FIOMPIN, FIOMPIN);
   reg_rw!(Gpio, u32, FIOSET,  set_FIOSET,  FIOSET);
   reg_rw!(Gpio, u32, FIOCLR,  set_FIOCLR,  FIOCLR);
 
