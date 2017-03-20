@@ -17,9 +17,24 @@ macro_rules! ioreg_old(
   ($io:ident: $ty:ty, $($reg:ident),+) => (
     #[allow(non_snake_case)]
     #[derive(Clone, Copy)]
+    #[repr(C, packed)]
     pub struct $io {
       $(
         $reg: VolatileCell<$ty>,
+      )+
+    }
+  )
+);
+
+macro_rules! gpio_reg(
+  ($io:ident: $ty:ty, $(($reg:ident, $padding:ident)),+) => (
+    #[allow(non_snake_case)]
+    #[derive(Clone, Copy)]
+    #[repr(C, packed)]
+    pub struct $io {
+      $(
+        $reg: VolatileCell<$ty>,
+        $padding: [u32; 31],
       )+
     }
   )
